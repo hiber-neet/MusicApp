@@ -19,12 +19,18 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         void onSongClick(Song song);
     }
 
-    private List<Song> songs;
-    private OnSongClickListener listener;
+    public interface OnSongLongClickListener {
+        void onSongLongClick(Song song);
+    }
 
-    public SongAdapter(List<Song> songs, OnSongClickListener listener) {
+    private List<Song> songs;
+    private OnSongClickListener clickListener;
+    private OnSongLongClickListener longClickListener;
+
+    public SongAdapter(List<Song> songs, OnSongClickListener clickListener, OnSongLongClickListener longClickListener) {
         this.songs = songs;
-        this.listener = listener;
+        this.clickListener = clickListener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -40,7 +46,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         Song song = songs.get(position);
         holder.title.setText(song.getTitle());
         holder.artist.setText(song.getArtist());
-        holder.itemView.setOnClickListener(v -> listener.onSongClick(song));
+
+        holder.itemView.setOnClickListener(v -> clickListener.onSongClick(song));
+        holder.itemView.setOnLongClickListener(v -> {
+            longClickListener.onSongLongClick(song);
+            return true;
+        });
     }
 
     @Override
@@ -50,7 +61,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
-
         ViewHolder(View v) {
             super(v);
             title = v.findViewById(R.id.songTitle);

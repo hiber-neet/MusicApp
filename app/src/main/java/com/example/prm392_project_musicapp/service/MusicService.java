@@ -1,13 +1,20 @@
 package com.example.prm392_project_musicapp.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+
+import com.example.prm392_project_musicapp.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,40 +40,35 @@ public class MusicService extends Service {
         return binder;
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // Nếu có bài hát truyền qua khi startService
-        if (intent != null && intent.hasExtra("SONG_PATH")) {
-            String songPath = intent.getStringExtra("SONG_PATH");
-            setPlaylist(new ArrayList<String>() {{ add(songPath); }}, 0);
-            play();
-        }
-        return START_STICKY;
-    }
-
     public void setPlaylist(List<String> songs, int startIndex) {
         this.playlist = songs;
         this.currentIndex = startIndex;
     }
 
     public void play() {
-        if (playlist == null || playlist.isEmpty()) return;
+        if (playlist.isEmpty()) return;
+
         String path = playlist.get(currentIndex);
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
 
-        releasePlayer();
-
+        mediaPlayer = new MediaPlayer();
         try {
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(this, Uri.parse(path));  // Hỗ trợ content:// và file://
-            mediaPlayer.setOnCompletionListener(mp -> {
-                if (isRepeat) {
-                    play();  // lặp lại cùng bài
-                } else {
-                    next();  // tự động sang bài tiếp
-                }
-            });
+            mediaPlayer.setDataSource(this, Uri.parse(path));
             mediaPlayer.prepare();
             mediaPlayer.start();
+
+            mediaPlayer.setOnCompletionListener(mp -> {
+                if (isRepeat) {
+                    play();
+                } else {
+                    next();
+                }
+            });
+
+            startForeground(1, buildNotification("Playing", path));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,16 +81,27 @@ public class MusicService extends Service {
     }
 
     public void resume() {
-        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+        if (mediaPlayer != null) {
             mediaPlayer.start();
         }
     }
 
-    public void stop() {
+    public void seekTo(int pos) {
         if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            releasePlayer();
+            mediaPlayer.seekTo(pos);
         }
+    }
+
+    public int getDuration() {
+        return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
+    }
+
+    public int getCurrentPosition() {
+        return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
+    }
+
+    public boolean isPlaying() {
+        return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
     public void next() {
@@ -107,34 +120,26 @@ public class MusicService extends Service {
         isRepeat = !isRepeat;
     }
 
-    public boolean isPlaying() {
-        return mediaPlayer != null && mediaPlayer.isPlaying();
+    private Notification buildNotification(String title, String content) {
+        createNotificationChannel();
+        return new NotificationCompat.Builder(this, "music_channel")
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_music_note)
+                .build();
     }
 
-    public int getCurrentPosition() {
-        return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
-    }
-
-    public int getDuration() {
-        return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
-    }
-
-    public void seekTo(int ms) {
-        if (mediaPlayer != null) {
-            mediaPlayer.seekTo(ms);
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "music_channel",
+                    "Music Playback",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
         }
-    }
-
-    private void releasePlayer() {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releasePlayer();
     }
 }

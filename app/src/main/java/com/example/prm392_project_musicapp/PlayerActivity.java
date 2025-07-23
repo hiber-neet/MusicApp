@@ -83,6 +83,7 @@ public class PlayerActivity extends AppCompatActivity {
         Intent intent = getIntent();
         songPath = intent.getStringExtra("SONG_PATH");
         title = intent.getStringExtra("SONG_TITLE");
+
         songTitle.setText(title != null ? title : "Unknown");
 
         // Khởi động và bind service

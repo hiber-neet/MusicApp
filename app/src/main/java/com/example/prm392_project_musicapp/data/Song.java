@@ -25,4 +25,12 @@ public class Song {
     public String getPath(){
         return this.path;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
 }
