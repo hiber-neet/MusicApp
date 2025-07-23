@@ -4,12 +4,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.AudioManager; // Import AudioManager
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Button;
-import android.widget.SeekBar;
+import android.widget.SeekBar; // Import SeekBar
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,10 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView songTitle, currentTime, totalTime;
     private Button btnPlayPause, btnNext, btnPrev, btnRepeat;
     private SeekBar seekBar;
+
+    // Add these lines for volume control
+    private SeekBar volumeSeekBar;
+    private AudioManager audioManager;
 
     private MusicService musicService;
     private boolean isBound = false;
@@ -80,6 +85,36 @@ public class PlayerActivity extends AppCompatActivity {
         btnRepeat = findViewById(R.id.btnRepeat);
         seekBar = findViewById(R.id.playerSeekBar);
 
+        // Initialize volume control views and AudioManager
+        volumeSeekBar = findViewById(R.id.volumeSeekBar);
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        // Set up the volume SeekBar
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volumeSeekBar.setMax(maxVolume);
+        volumeSeekBar.setProgress(currentVolume);
+
+        volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Optional: Called when the user starts dragging the SeekBar
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Optional: Called when the user stops dragging the SeekBar
+            }
+        });
+
+
         Intent intent = getIntent();
         songPath = intent.getStringExtra("SONG_PATH");
         title = intent.getStringExtra("SONG_TITLE");
@@ -104,9 +139,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        btnNext.setOnClickListener(v -> musicService.next());
-        btnPrev.setOnClickListener(v -> musicService.previous());
-        btnRepeat.setOnClickListener(v -> musicService.toggleRepeat());
+        btnNext.setOnClickListener(v -> {
+            if (musicService != null) musicService.next();
+        });
+        btnPrev.setOnClickListener(v -> {
+            if (musicService != null) musicService.previous();
+        });
+        btnRepeat.setOnClickListener(v -> {
+            if (musicService != null) musicService.toggleRepeat();
+        });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
