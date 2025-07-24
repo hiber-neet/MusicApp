@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MusicDatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "musicplayer.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public MusicDatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -32,6 +32,11 @@ public class MusicDatabaseHelper extends SQLiteOpenHelper {
                 "PRIMARY KEY (playlist_id, song_id)," +
                 "FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE," +
                 "FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE)");
+
+        db.execSQL("CREATE TABLE users (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "username TEXT UNIQUE," +
+                "password TEXT)");
     }
 
     @Override
@@ -39,6 +44,7 @@ public class MusicDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS playlist_songs");
         db.execSQL("DROP TABLE IF EXISTS playlists");
         db.execSQL("DROP TABLE IF EXISTS songs");
+        db.execSQL("DROP TABLE IF EXISTS users");
         onCreate(db);
     }
 }
