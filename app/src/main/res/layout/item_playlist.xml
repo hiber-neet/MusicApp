@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    android:background="@drawable/item_background"
+    android:elevation="2dp">
+
+    <!-- Playlist Icon -->
+    <ImageView
+        android:id="@+id/playlistIcon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_playlist_music"
+        android:background="@drawable/circular_background"
+        android:padding="14dp"
+        android:scaleType="centerInside"
+        app:tint="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Playlist Info Container -->
+    <LinearLayout
+        android:id="@+id/playlistInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@id/playlistIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/playlistName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Playlist Name"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:shadowColor="#40000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
+
+        <TextView
+            android:id="@+id/playlistSongCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 songs"
+            android:textColor="#E0FFFFFF"
+            android:textSize="15sp"
+            android:layout_marginTop="4dp"
+            android:shadowColor="#40000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
