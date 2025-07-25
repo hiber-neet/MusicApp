@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.VideoView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -36,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
     private EditText searchBar;
     private Button btnCreateSong;
     private Button btnOpenPlaylist;
+    private VideoView backgroundVideo;
+
     private MusicDatabaseHelper dbHelper;
     private SongAdapter adapter;
     private ArrayList<Song> songList = new ArrayList<>();
@@ -62,25 +65,25 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
 
+        // Khởi tạo các view
         dbHelper = new MusicDatabaseHelper(this);
         recyclerView = findViewById(R.id.songRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         searchBar = findViewById(R.id.searchBar);
         btnCreateSong = findViewById(R.id.btnCreateSong);
+        btnOpenPlaylist = findViewById(R.id.btnOpenPlaylists);
+        backgroundVideo = findViewById(R.id.backgroundVideo);
 
+        playBackgroundVideo(); // ✅ Gọi khi khởi tạo
+
+        // Quét nhạc trong thư mục
         String musicDir = "/storage/emulated/0/Music/";
-        MediaScannerConnection.scanFile(this,
-                new String[]{musicDir},
-                null,
-                (path, uri) -> System.out.println("Scanned: " + path + " -> " + uri));
+        MediaScannerConnection.scanFile(this, new String[]{musicDir}, null, null);
 
-        // Quét nhạc trong device và lưu SQLite
         MusicScanner.scanAndStore(this);
-
-        // Load danh sách nhạc ban đầu
         loadSongs();
 
-        // Tìm kiếm (filter theo tiêu đề hoặc artist)
+        // Tìm kiếm
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -89,14 +92,42 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Chọn nhạc thủ công (thêm vào DB)
+        // Mở file nhạc
         btnCreateSong.setOnClickListener(v -> openFilePicker());
 
-        btnOpenPlaylist = findViewById(R.id.btnOpenPlaylists);
+        // Mở danh sách playlist
         btnOpenPlaylist.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, PlaylistActivity.class);
             startActivity(intent);
         });
+    }
+
+    // ✅ Gọi lại phát video khi quay lại màn hình
+    @Override
+    protected void onResume() {
+        super.onResume();
+        playBackgroundVideo();
+    }
+
+    // ✅ Dừng video khi app bị che (quay đi màn hình khác)
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (backgroundVideo != null && backgroundVideo.isPlaying()) {
+            backgroundVideo.pause();
+        }
+    }
+
+    private void playBackgroundVideo() {
+        if (backgroundVideo != null) {
+            Uri uri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.bg_loop);
+            backgroundVideo.setVideoURI(uri);
+            backgroundVideo.setOnPreparedListener(mp -> {
+                mp.setLooping(true);
+                mp.setVolume(0f, 0f);
+                backgroundVideo.start();
+            });
+        }
     }
 
     private void openFilePicker() {
@@ -182,10 +213,16 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
 
     @Override
     public void onSongClick(Song song) {
+        int clickedIndex = filteredList.indexOf(song); // Lấy vị trí của bài hát trong filteredList
+        ArrayList<String> paths = new ArrayList<>();
+        for (Song s : filteredList) {
+            paths.add(s.getPath());
+        }
+
         Intent intent = new Intent(this, PlayerActivity.class);
-        intent.putExtra("SONG_PATH", song.getPath());
-        intent.putExtra("SONG_TITLE", song.getTitle());
-        intent.putExtra("SONG_ARTIST", song.getArtist());
+        intent.putExtra("SONG_LIST", paths);
+        intent.putExtra("SONG_INDEX", clickedIndex);
+        intent.putExtra("SONG_TITLE", song.getTitle()); // Optional: để hiển thị sớm
         startActivity(intent);
     }
 

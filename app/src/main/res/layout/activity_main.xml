@@ -1,35 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/searchBar"
-        android:hint="Search songs, artist, album"
+    <!-- Nền video toàn màn hình -->
+    <VideoView
+        android:id="@+id/backgroundVideo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:focusable="false" />
+
+    <!-- Lớp nội dung giao diện (đè lên VideoView) -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:padding="8dp"
-        android:background="@android:drawable/edit_text" />
+        android:background="@android:color/transparent">
 
-    <Button
-        android:id="@+id/btnCreateSong"
-        android:text="Create New Song"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" />
+        <!-- Thanh tìm kiếm -->
+        <EditText
+            android:id="@+id/searchBar"
+            android:hint="Search songs, artist, album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="@android:drawable/edit_text" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/songRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"/>
-    <Button
-        android:id="@+id/btnOpenPlaylists"
-        android:text="Manage Playlists"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"/>
-</LinearLayout>
+        <!-- Nút tạo bài hát -->
+        <Button
+            android:id="@+id/btnCreateSong"
+            android:text="Create New Song"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <!-- Danh sách bài hát -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/songRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp" />
+
+        <!-- Nút mở playlist -->
+        <Button
+            android:id="@+id/btnOpenPlaylists"
+            android:text="Manage Playlists"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</FrameLayout>

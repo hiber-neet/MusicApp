@@ -1,32 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:background="#121212"
+    android:padding="24dp"
     android:gravity="center"
-    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Song Title -->
     <TextView
         android:id="@+id/playerSongTitle"
-        android:textSize="20sp"
+        android:text="Song Title"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="24dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <!-- SeekBar Progress -->
     <SeekBar
         android:id="@+id/playerSeekBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:progressTint="#1DB954"
+        android:thumbTint="#1DB954" />
 
+    <!-- Time Labels -->
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
 
         <TextView
             android:id="@+id/playerCurrentTime"
             android:text="00:00"
+            android:textColor="#CCCCCC"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:gravity="start"
@@ -35,60 +46,75 @@
         <TextView
             android:id="@+id/playerTotalTime"
             android:text="00:00"
+            android:textColor="#CCCCCC"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:gravity="end"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-
+    <!-- Control Buttons -->
     <LinearLayout
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
+        <ImageButton
             android:id="@+id/btnPrev"
-            android:text="Prev"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_skip_previous"
+            android:background="@android:color/transparent"
+            android:contentDescription="Previous"
+            app:tint="#FFFFFF" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnPlayPause"
-            android:text="Pause"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:src="@drawable/ic_play_circle"
+            android:background="@android:color/transparent"
+            android:contentDescription="Play/Pause"
+            app:tint="#1DB954" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnNext"
-            android:text="Next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_skip_next"
+            android:background="@android:color/transparent"
+            android:contentDescription="Next"
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
-    <Button
+    <!-- Repeat Button -->
+    <ImageButton
         android:id="@+id/btnRepeat"
-        android:text="Repeat"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:src="@drawable/ic_repeat"
+        android:background="@android:color/transparent"
+        android:contentDescription="Repeat"
+        app:tint="#CCCCCC" />
 
     <!-- Volume Control -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Volume"
-        android:layout_marginTop="20dp"/>
+        android:textColor="#CCCCCC"
+        android:layout_marginTop="24dp"/>
 
     <SeekBar
         android:id="@+id/volumeSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:max="100" />  <!-- You can adjust max value as needed in Kotlin -->
-
+        android:max="100"
+        android:progressTint="#1DB954"
+        android:thumbTint="#1DB954" />
 </LinearLayout>
