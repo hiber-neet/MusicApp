@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
     private RecyclerView recyclerView;
     private EditText searchBar;
     private Button btnCreateSong;
+    private Button btnOpenPlaylist;
     private MusicDatabaseHelper dbHelper;
     private SongAdapter adapter;
     private ArrayList<Song> songList = new ArrayList<>();
@@ -90,6 +91,12 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
 
         // Chọn nhạc thủ công (thêm vào DB)
         btnCreateSong.setOnClickListener(v -> openFilePicker());
+
+        btnOpenPlaylist = findViewById(R.id.btnOpenPlaylists);
+        btnOpenPlaylist.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PlaylistActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void openFilePicker() {
