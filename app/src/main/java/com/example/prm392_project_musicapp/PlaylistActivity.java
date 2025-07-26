@@ -51,6 +51,13 @@ public class PlaylistActivity extends AppCompatActivity {
         loadPlaylists();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh playlists when returning to this activity
+        loadPlaylists();
+    }
+
     private void initViews() {
         fabAddPlaylist = findViewById(R.id.fabAddPlaylist);
         playlistRecyclerView = findViewById(R.id.playlistRecyclerView);
@@ -118,13 +125,20 @@ public class PlaylistActivity extends AppCompatActivity {
         playlists.clear();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor cursor = db.query("playlists", new String[]{"id", "name"},
-                null, null, null, null, "name ASC");
+        // Query to get playlists with song counts
+        String query = "SELECT p.id, p.name, COUNT(ps.song_id) as song_count " +
+                "FROM playlists p " +
+                "LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id " +
+                "GROUP BY p.id, p.name " +
+                "ORDER BY p.name ASC";
+
+        Cursor cursor = db.rawQuery(query, null);
 
         while (cursor.moveToNext()) {
             int id = cursor.getInt(0);
             String name = cursor.getString(1);
-            playlists.add(new Playlist(id, name));
+            int songCount = cursor.getInt(2);
+            playlists.add(new Playlist(id, name, songCount));
         }
 
         cursor.close();
@@ -178,7 +192,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         long id = db.insert("playlists", null, values);
         if (id != -1) {
-            playlists.add(new Playlist((int) id, name));
+            playlists.add(new Playlist((int) id, name, 0)); // New playlist has 0 songs
             adapter.notifyItemInserted(playlists.size() - 1);
             updateEmptyState();
             Toast.makeText(this, "Playlist created successfully", Toast.LENGTH_SHORT).show();

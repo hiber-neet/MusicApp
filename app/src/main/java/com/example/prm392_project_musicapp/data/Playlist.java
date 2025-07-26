@@ -3,10 +3,18 @@ package com.example.prm392_project_musicapp.data;
 public class Playlist {
     private int id;
     private String name;
+    private int songCount;
 
     public Playlist(int id, String name) {
         this.id = id;
         this.name = name;
+        this.songCount = 0;
+    }
+
+    public Playlist(int id, String name, int songCount) {
+        this.id = id;
+        this.name = name;
+        this.songCount = songCount;
     }
 
     public int getId() {
@@ -23,6 +31,14 @@ public class Playlist {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getSongCount() {
+        return songCount;
+    }
+
+    public void setSongCount(int songCount) {
+        this.songCount = songCount;
     }
 
     @Override

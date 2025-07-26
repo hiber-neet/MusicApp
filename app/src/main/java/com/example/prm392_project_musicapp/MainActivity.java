@@ -13,8 +13,12 @@ import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.annotation.Nullable;
@@ -24,14 +28,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.prm392_project_musicapp.adapter.PlaylistAdapter;
+import com.example.prm392_project_musicapp.adapter.PlaylistSelectionAdapter;
 import com.example.prm392_project_musicapp.adapter.SongAdapter;
 import com.example.prm392_project_musicapp.data.MusicDatabaseHelper;
+import com.example.prm392_project_musicapp.data.Playlist;
 import com.example.prm392_project_musicapp.data.Song;
 import com.example.prm392_project_musicapp.utils.MusicScanner;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SongAdapter.OnSongClickListener, SongAdapter.OnSongLongClickListener {
+public class MainActivity extends AppCompatActivity implements SongAdapter.OnSongClickListener, SongAdapter.OnSongLongClickListener, SongAdapter.OnSongMoreOptionsClickListener {
 
     private RecyclerView recyclerView;
     private EditText searchBar;
@@ -197,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
         filteredList.clear();
         filteredList.addAll(songList);
         adapter = new SongAdapter(filteredList, this, this);
+        adapter.setMoreOptionsClickListener(this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -239,5 +247,125 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnSon
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();
+    }
+
+    @Override
+    public void onSongMoreOptionsClick(Song song) {
+        showPlaylistSelectionDialog(song);
+    }
+
+    private void showPlaylistSelectionDialog(Song song) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_select_playlist, null);
+        builder.setView(dialogView);
+
+        TextView tvSongInfo = dialogView.findViewById(R.id.tvSongInfo);
+        RecyclerView playlistRecyclerView = dialogView.findViewById(R.id.playlistRecyclerView);
+        Button btnCancel = dialogView.findViewById(R.id.btnCancel);
+        Button btnCreateNew = dialogView.findViewById(R.id.btnCreateNew);
+
+        tvSongInfo.setText("Song: " + song.getTitle() + " - " + song.getArtist());
+        AlertDialog dialog = builder.create();
+        // Load playlists
+        ArrayList<Playlist> playlists = loadPlaylists();
+        PlaylistSelectionAdapter playlistAdapter = new PlaylistSelectionAdapter(playlists, playlist -> {
+            addSongToPlaylist(song, playlist);
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+
+        playlistRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        playlistRecyclerView.setAdapter(playlistAdapter);
+
+
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnCreateNew.setOnClickListener(v -> {
+            dialog.dismiss();
+            showCreatePlaylistDialog(song);
+        });
+
+        dialog.show();
+    }
+
+    private ArrayList<Playlist> loadPlaylists() {
+        ArrayList<Playlist> playlists = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM playlists ORDER BY name", null);
+        if (c != null) {
+            while (c.moveToNext()) {
+                playlists.add(new Playlist(
+                        c.getInt(c.getColumnIndexOrThrow("id")),
+                        c.getString(c.getColumnIndexOrThrow("name"))
+                ));
+            }
+            c.close();
+        }
+        db.close();
+        return playlists;
+    }
+
+    private void addSongToPlaylist(Song song, Playlist playlist) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        
+        // Check if song is already in playlist
+        Cursor c = db.rawQuery("SELECT * FROM playlist_songs WHERE playlist_id = ? AND song_id = ?", 
+                new String[]{String.valueOf(playlist.getId()), String.valueOf(song.getId())});
+        
+        if (c != null && c.getCount() > 0) {
+            Toast.makeText(this, "Song is already in this playlist", Toast.LENGTH_SHORT).show();
+            c.close();
+        } else {
+            if (c != null) c.close();
+            
+            ContentValues values = new ContentValues();
+            values.put("playlist_id", playlist.getId());
+            values.put("song_id", song.getId());
+            db.insert("playlist_songs", null, values);
+            
+            Toast.makeText(this, "Added to playlist: " + playlist.getName(), Toast.LENGTH_SHORT).show();
+        }
+        db.close();
+    }
+
+    private void showCreatePlaylistDialog(Song song) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Create New Playlist");
+
+        final EditText input = new EditText(this);
+        input.setHint("Enter playlist name");
+        builder.setView(input);
+
+        builder.setPositiveButton("Create", (dialog, which) -> {
+            String playlistName = input.getText().toString().trim();
+            if (!playlistName.isEmpty()) {
+                createPlaylistAndAddSong(playlistName, song);
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void createPlaylistAndAddSong(String playlistName, Song song) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        
+        // Create playlist
+        ContentValues playlistValues = new ContentValues();
+        playlistValues.put("name", playlistName);
+        long playlistId = db.insert("playlists", null, playlistValues);
+        
+        if (playlistId != -1) {
+            // Add song to playlist
+            ContentValues songValues = new ContentValues();
+            songValues.put("playlist_id", playlistId);
+            songValues.put("song_id", song.getId());
+            db.insert("playlist_songs", null, songValues);
+            
+            Toast.makeText(this, "Created playlist and added song: " + playlistName, Toast.LENGTH_SHORT).show();
+        }
+        
+        db.close();
     }
 }

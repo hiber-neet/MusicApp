@@ -45,6 +45,14 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Playlist playlist = playlists.get(position);
         holder.name.setText(playlist.getName());
+        
+        // Set song count
+        int songCount = playlist.getSongCount();
+        if (songCount == 1) {
+            holder.songCount.setText("1 song");
+        } else {
+            holder.songCount.setText(songCount + " songs");
+        }
 
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) {
@@ -67,11 +75,12 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ViewHo
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView name;
+        TextView name, songCount;
 
         ViewHolder(View v) {
             super(v);
             name = v.findViewById(R.id.playlistName);
+            songCount = v.findViewById(R.id.playlistSongCount);
         }
     }
 }

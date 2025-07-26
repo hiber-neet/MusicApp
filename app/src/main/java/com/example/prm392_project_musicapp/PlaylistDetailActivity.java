@@ -34,7 +34,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistDetailActivity extends AppCompatActivity implements SongAdapter.OnSongClickListener, SongAdapter.OnSongLongClickListener {
+public class PlaylistDetailActivity extends AppCompatActivity implements SongAdapter.OnSongClickListener, SongAdapter.OnSongLongClickListener, SongAdapter.OnSongMoreOptionsClickListener {
 
     public static final String EXTRA_PLAYLIST_ID = "playlist_id";
     public static final String EXTRA_PLAYLIST_NAME = "playlist_name";
@@ -309,6 +309,7 @@ public class PlaylistDetailActivity extends AppCompatActivity implements SongAda
     private void setupRecyclerView() {
         songs = new ArrayList<>();
         adapter = new SongAdapter(songs, this, this);
+        adapter.setMoreOptionsClickListener(this);
         songsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         songsRecyclerView.setAdapter(adapter);
     }
@@ -365,6 +366,40 @@ public class PlaylistDetailActivity extends AppCompatActivity implements SongAda
     @Override
     public void onSongLongClick(Song song) {
         Toast.makeText(this, "Long clicked: " + song.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSongMoreOptionsClick(Song song) {
+        showRemoveSongDialog(song);
+    }
+
+    private void showRemoveSongDialog(Song song) {
+        new AlertDialog.Builder(this)
+                .setTitle("Remove Song")
+                .setMessage("Remove \"" + song.getTitle() + "\" from this playlist?")
+                .setPositiveButton("Remove", (dialog, which) -> removeSongFromPlaylist(song))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void removeSongFromPlaylist(Song song) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            int deletedRows = db.delete("playlist_songs", 
+                    "playlist_id = ? AND song_id = ?", 
+                    new String[]{String.valueOf(playlistId), String.valueOf(song.getId())});
+
+            if (deletedRows > 0) {
+                Toast.makeText(this, "Song removed from playlist", Toast.LENGTH_SHORT).show();
+                loadPlaylistSongs(); // Reload the playlist
+            } else {
+                Toast.makeText(this, "Failed to remove song", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error removing song: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } finally {
+            db.close();
+        }
     }
 
     @Override

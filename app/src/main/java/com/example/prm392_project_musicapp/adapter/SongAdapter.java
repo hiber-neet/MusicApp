@@ -3,6 +3,7 @@ package com.example.prm392_project_musicapp.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,14 +24,23 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         void onSongLongClick(Song song);
     }
 
+    public interface OnSongMoreOptionsClickListener {
+        void onSongMoreOptionsClick(Song song);
+    }
+
     private List<Song> songs;
     private OnSongClickListener clickListener;
     private OnSongLongClickListener longClickListener;
+    private OnSongMoreOptionsClickListener moreOptionsClickListener;
 
     public SongAdapter(List<Song> songs, OnSongClickListener clickListener, OnSongLongClickListener longClickListener) {
         this.songs = songs;
         this.clickListener = clickListener;
         this.longClickListener = longClickListener;
+    }
+
+    public void setMoreOptionsClickListener(OnSongMoreOptionsClickListener listener) {
+        this.moreOptionsClickListener = listener;
     }
 
     @NonNull
@@ -52,6 +62,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             longClickListener.onSongLongClick(song);
             return true;
         });
+
+        holder.btnMoreOptions.setOnClickListener(v -> {
+            if (moreOptionsClickListener != null) {
+                moreOptionsClickListener.onSongMoreOptionsClick(song);
+            }
+        });
     }
 
     @Override
@@ -61,10 +77,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
+        ImageButton btnMoreOptions;
+        
         ViewHolder(View v) {
             super(v);
             title = v.findViewById(R.id.songTitle);
             artist = v.findViewById(R.id.songArtist);
+            btnMoreOptions = v.findViewById(R.id.btnMoreOptions);
         }
     }
 }
